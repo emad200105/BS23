@@ -24,3 +24,4 @@ Open `index.html` in a browser (no build step). Switch between **Before** and **
 
 ## Deploy on GitHub Pages
 Settings → Pages → Source: "Deploy from a branch" → branch `main`, folder `/ (root)` → Save.
+
