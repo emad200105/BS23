@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>foodi fix: stay signed in + remember address (concept prototype)</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{color-scheme:light}
+body{font-family:Inter,system-ui,sans-serif;background:#F6F4F1;color:#1F1D1B;min-height:100vh}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 20px 40px}
+.banner{font-size:12.5px;color:#6B6560;background:#EFEBE7;border-radius:8px;padding:8px 12px;margin-bottom:16px}
+h1{font-size:26px;font-weight:800;letter-spacing:-.3px}
+.lead{color:#6B6560;margin:6px 0 18px;font-size:15px}
+.grid{display:grid;grid-template-columns:340px 1fr;gap:28px;align-items:start}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.phone{margin:0 auto}}
+.phone{width:340px;height:640px;background:#fff;border:11px solid #23201E;border-radius:42px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.notch{width:110px;height:22px;background:#23201E;border-radius:0 0 14px 14px;margin:0 auto;flex:none}
+.scr{flex:1;overflow:auto;padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;font-size:14px}
+.brand{font-weight:800;font-size:22px;color:#E5484D}
+.brand small{font-size:11px;color:#8A847E;font-weight:600;margin-left:4px}
+.muted{color:#8A847E;font-size:12.5px}
+button{font:inherit;cursor:pointer;color:#1F1D1B}
+.btn{background:#E5484D;color:#fff;border:0;padding:12px;border-radius:11px;font-weight:700;width:100%}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.sec{background:#fff;color:#1F1D1B;border:1.5px solid #DDD7D1}
+.deliver{background:#FFF1EE;border-radius:10px;padding:10px 12px;border:0;text-align:left;width:100%}
+.deliver .l{font-size:11px;color:#8A847E;font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.deliver .v{font-weight:700;margin-top:3px}
+.rest{display:flex;gap:12px;align-items:center;border:1.5px solid #EEE9E4;border-radius:12px;padding:10px}
+.thumb{width:52px;height:52px;border-radius:10px;flex:none;display:grid;place-items:center;font-size:24px}
+.rest b{display:block}
+.add{margin-left:auto;background:#E5484D;color:#fff;border:0;border-radius:8px;padding:6px 10px;font-weight:700;font-size:13px}
+.addr{border:1.5px solid #E4DED8;border-radius:11px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start;background:#fff;text-align:left;width:100%}
+.addr.sel{border-color:#1B7A3D;background:#F0FAF3}
+.radio{width:16px;height:16px;border-radius:50%;border:2px solid #B9B2AB;margin-top:2px;flex:none}
+.sel .radio{border:5px solid #1B7A3D}
+.pill{display:inline-block;font-size:10px;font-weight:700;background:#1B7A3D;color:#fff;border-radius:5px;padding:2px 6px;margin-left:5px;vertical-align:1px}
+input{font:inherit;border:1.5px solid #DDD7D1;border-radius:10px;padding:10px;width:100%}
+.alert{background:#FFF5F4;border:2px solid #F3B9B5;border-radius:14px;padding:16px;text-align:center}
+.alert b{color:#B3261E;display:block;font-size:16px;margin-bottom:4px}
+.hint{background:#FFF8E6;border:1.5px solid #F2D98A;border-radius:10px;padding:9px 11px;font-size:12.5px}
+.hint button{background:none;border:0;color:#1F1D1B;text-decoration:underline;font-weight:700;font-size:12.5px;padding:0}
+.toast{position:absolute;left:14px;right:14px;top:34px;background:#1B7A3D;color:#fff;border-radius:12px;padding:11px 13px;font-size:13px;font-weight:600;box-shadow:0 6px 18px rgba(0,0,0,.18);z-index:5;transition:opacity .3s}
+.toast.hide{opacity:0;pointer-events:none}
+.ok{text-align:center;padding-top:60px}
+.ok .big{font-size:52px}
+.panel{background:#fff;border-radius:16px;padding:18px;box-shadow:0 1px 0 #E4DED8}
+.panel h3{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#6B6560;margin-bottom:10px}
+.seg{display:flex;background:#EFEBE7;border-radius:11px;padding:4px;gap:4px;margin-bottom:6px}
+.seg button{flex:1;border:0;background:transparent;padding:10px;border-radius:8px;font-weight:700;color:#6B6560}
+.seg button.on.bug{background:#B3261E;color:#fff}
+.seg button.on.fix{background:#1B7A3D;color:#fff}
+.sim{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.sim button{border:1.5px solid #DDD7D1;background:#fff;color:#1F1D1B;border-radius:10px;padding:10px;font-weight:600;text-align:left;font-size:13.5px}
+.sim button:hover{border-color:#1F1D1B}
+.sim button span{display:block;font-weight:400;color:#8A847E;font-size:12px;margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#F6F4F1;border-radius:10px;padding:10px}
+.stat .n{font-size:24px;font-weight:800}
+.stat .t{font-size:12px;color:#6B6560}
+.log{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;line-height:1.55;max-height:210px;overflow:auto;background:#1F1D1B;color:#E9E4DF;border-radius:10px;padding:10px 12px}
+.log .g{color:#7EE2A0}.log .r{color:#FF8A84}.log .y{color:#F2D98A}
+.stack{display:flex;flex-direction:column;gap:16px}
+.how{font-size:13.5px;color:#4A4541;line-height:1.5}
+.how li{margin-left:18px}
+</style></head><body>
+<div class="wrap">
+  <div class="banner">Unofficial concept prototype for a Product Owner exercise. Not affiliated with foodi. Demo data only; no real login or orders.</div>
+  <h1>Fix: stay signed in, and remember the delivery address</h1>
+  <p class="lead">Switch between <b>Before</b> and <b>After</b>, then use the buttons on the right to trigger the real-world events that cause the bugs.</p>
+
+  <div class="grid">
+    <div class="phone"><div class="notch"></div><div class="toast hide" id="toast"></div><div class="scr" id="screen"></div></div>
+
+    <div class="stack">
+      <div class="panel">
+        <h3>App version</h3>
+        <div class="seg">
+          <button id="mBug" class="bug">Before: current app</button>
+          <button id="mFix" class="fix">After: with the fix</button>
+        </div>
+        <p class="muted" id="modeNote"></p>
+      </div>
+
+      <div class="panel">
+        <h3>Simulate what happens in real life</h3>
+        <div class="sim">
+          <button id="sToken">⏱ Access token expires<span>happens every ~15 min</span></button>
+          <button id="sNet">📶 Network drops during refresh<span>common on mobile data</span></button>
+          <button id="sUpdate">⬆️ App update / reinstall<span>local cache gets wiped</span></button>
+          <button id="sGps">📍 User is at the office now<span>GPS far from last address</span></button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Results this session</h3>
+        <div class="stats">
+          <div class="stat"><div class="n" id="cLogout">0</div><div class="t">unexpected logouts</div></div>
+          <div class="stat"><div class="n" id="cRetype">0</div><div class="t">addresses re-typed</div></div>
+          <div class="stat"><div class="n" id="cOrders">0</div><div class="t">orders placed</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>What the app did</h3>
+        <div class="log" id="log"></div>
+      </div>
+
+      <div class="panel how">
+        <h3>What the fix changes</h3>
+        <ul>
+          <li><b>Session:</b> a long-lived refresh token in secure storage renews the session silently. The app logs out only when the server rejects the token, never on a timeout or offline.</li>
+          <li><b>Address:</b> delivered addresses are saved to the account, not only the phone. The last-used one is pre-selected, and the app asks only when GPS shows the user is somewhere else.</li>
+        </ul>
+        <p style="margin-top:10px"><button class="btn sec" id="reset" style="width:auto;padding:8px 14px">Reset demo</button></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADDR = {
+  home:{id:'home',label:'Home',line:'House 12, Road 5, Dhanmondi'},
+  office:{id:'office',label:'Office',line:'Level 7, Gulshan Ave, Gulshan 1'}
+};
+const RESTS=[
+  {n:'Kacchi House',d:'Kacchi biryani · 25 min',e:'🍛',c:'#FCE9D7',p:320},
+  {n:'Burger Lab',d:'Burgers · 20 min',e:'🍔',c:'#FDEBD0',p:280},
+  {n:'Chui Jhal Corner',d:'Beef · 35 min',e:'🥘',c:'#F7DCD6',p:450}
+];
+const fresh=()=>({
+  mode:'bug', screen:'home',
+  // "server" = account data that survives anything on the phone
+  server:{addresses:['home','office'], lastUsed:'home', refreshValid:true},
+  // "secure storage" survives app updates (Keychain/Keystore) - only used by the fix
+  secure:{refreshToken:true},
+  // "local cache" is wiped on update/reinstall
+  cache:{accessToken:true, lastAddr:'home'},
+  signedIn:true, cart:null, selected:null, atOffice:false, typed:'',
+  counts:{logout:0,retype:0,orders:0}, log:[]
+});
+let S; try{S=JSON.parse(localStorage.getItem('foodiFixDemo'))}catch(e){}
+if(!S||!S.server) S=fresh();
+const save=()=>{try{localStorage.setItem('foodiFixDemo',JSON.stringify(S))}catch(e){}};
+const $=id=>document.getElementById(id);
+function log(msg,cls=''){S.log.push([new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'}),msg,cls]);S.log=S.log.slice(-60)}
+const fix=()=>S.mode==='fix';
+let tT;function toast(m){const t=$('toast');t.textContent=m;t.dataset.live='1';t.classList.remove('hide');clearTimeout(tT);tT=setTimeout(()=>{delete t.dataset.live;t.classList.add('hide')},3200);}
+
+function defaultAddr(){
+  if(fix()) return S.server.lastUsed;           // from the account
+  return S.cache.lastAddr || null;              // from phone cache only
+}
+
+function render(){
+  $('mBug').className='bug'+(S.mode==='bug'?' on':'');
+  $('mFix').className='fix'+(S.mode==='fix'?' on':'');
+  $('modeNote').textContent = fix()
+    ? 'Session renews silently; addresses come from the account.'
+    : 'Any failed refresh logs the user out; address lives only in the phone cache.';
+  $('sGps').innerHTML = S.atOffice ? '📍 User is back home<span>return to the last address</span>' : '📍 User is at the office now<span>GPS far from last address</span>';
+  $('toast').classList.toggle('hide', true && !$('toast').dataset.live);
+  $('cLogout').textContent=S.counts.logout;
+  $('cRetype').textContent=S.counts.retype;
+  $('cOrders').textContent=S.counts.orders;
+  $('log').innerHTML=S.log.map(([t,m,c])=>`<div class="${c}">${t}  ${m}</div>`).join('')||'<div>Ready. Try a simulation.</div>';
+  $('log').scrollTop=1e6;
+  const sc=$('screen');
+  if(!S.signedIn){ sc.innerHTML=loginView(); bindLogin(); save(); return; }
+  sc.innerHTML = S.screen==='checkout'?checkoutView(): S.screen==='done'?doneView(): homeView();
+  bindScreen(); save();
+}
+
+function homeView(){
+  const a=defaultAddr();
+  const where=a?`${ADDR[a].label} · ${ADDR[a].line}`:'Set delivery address';
+  return `<div class="brand">foodi<small>concept</small></div>
+  <div style="font-weight:700;font-size:16px">Welcome back, Rahim</div>
+  <div class="deliver"><div class="l">Deliver to</div><div class="v">${where}</div></div>
+  <div class="muted">Popular near you</div>
+  ${RESTS.map((r,i)=>`<div class="rest"><div class="thumb" style="background:${r.c}">${r.e}</div><div><b>${r.n}</b><span class="muted">${r.d}</span></div><button class="add" data-r="${i}">৳${r.p}</button></div>`).join('')}
+  <div class="muted" style="text-align:center;margin-top:auto">Tap a price to order</div>`;
+}
+
+function checkoutView(){
+  const r=RESTS[S.cart];
+  let body;
+  const a=defaultAddr();
+  if(fix()){
+    if(S.selected==null) S.selected=a;
+    const hint = S.atOffice && S.selected!=='office'
+      ? `<div class="hint">📍 You seem to be 4 km from ${ADDR[S.selected].label}. <button id="useOffice">Deliver to Office instead?</button></div>`:'';
+    body=`<div style="font-weight:700">Deliver to</div>
+      ${S.server.addresses.map(id=>`<button class="addr ${S.selected===id?'sel':''}" data-a="${id}"><div class="radio"></div><div><b>${ADDR[id].label}</b>${id===S.server.lastUsed?'<span class="pill">LAST USED</span>':''}<div class="muted">${ADDR[id].line}</div></div></button>`).join('')}
+      ${hint}`;
+  } else {
+    if(a){ S.selected=a;
+      body=`<div style="font-weight:700">Deliver to</div><button class="addr sel"><div class="radio"></div><div><b>${ADDR[a].label}</b><div class="muted">${ADDR[a].line}</div></div></button>`;
+    } else {
+      S.selected=null;
+      body=`<div style="font-weight:700">Delivery address</div>
+        <div class="muted" style="color:#B3261E">Last address not found. Please enter it again.</div>
+        <input id="typed" placeholder="Area, road, house…" value="${S.typed}">
+        <button class="btn sec" id="fill">Type "House 12, Road 5, Dhanmondi"</button>`;
+    }
+  }
+  return `<div style="display:flex;align-items:center;gap:8px"><button class="btn sec" id="back" style="width:auto;padding:6px 10px">←</button><div style="font-weight:800;font-size:18px">Checkout</div></div>
+  <div class="rest"><div class="thumb" style="background:${r.c}">${r.e}</div><div><b>${r.n}</b><span class="muted">1 item · ৳${r.p}</span></div></div>
+  ${body}
+  <div style="margin-top:auto"><button class="btn" id="place" ${(!fix()&&!a&&!S.typed)?'disabled':''}>Place order · ৳${r.p+40}</button></div>`;
+}
+
+function doneView(){
+  const a=S.selected?ADDR[S.selected]:{label:'Typed address',line:S.typed};
+  return `<div class="ok"><div class="big">✅</div><div style="font-weight:800;font-size:20px;margin:8px 0">Order placed</div>
+  <div class="muted">Delivering to ${a.label}<br>${a.line}</div></div>
+  <div style="margin-top:auto"><button class="btn" id="again">Order again</button></div>`;
+}
+
+function loginView(){
+  return `<div class="brand">foodi<small>concept</small></div>
+  <div class="alert"><b>Session expired</b><div class="muted">Please log in again to continue.</div></div>
+  <div class="muted">In the real app this means: enter phone number, wait for OTP, type it in. Many users give up here and open another app.</div>
+  <div style="margin-top:auto"><button class="btn" id="relogin">Log in again with OTP (demo)</button></div>`;
+}
+
+function bindLogin(){ $('relogin').onclick=()=>{ S.signedIn=true; S.cache.accessToken=true; S.screen='home'; log('User re-entered phone + OTP to get back in','y'); render(); }; }
+function bindScreen(){
+  document.querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{S.cart=+b.dataset.r;S.selected=null;S.typed='';S.screen='checkout';render()});
+  document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{S.selected=b.dataset.a;render()});
+  const on=(id,f)=>{const e=$(id); if(e) e.onclick=f;};
+  on('back',()=>{S.screen='home';render()});
+  on('useOffice',()=>{S.selected='office';log('GPS mismatch → user picked Office in one tap','g');render()});
+  on('fill',()=>{S.typed='House 12, Road 5, Dhanmondi';render()});
+  const t=$('typed'); if(t) t.oninput=e=>{S.typed=e.target.value; $('place').disabled=!S.typed;};
+  on('place',()=>{
+    if(!fix() && !S.cache.lastAddr){ S.counts.retype++; S.cache.lastAddr='home'; log('Order placed, but user had to retype the address','r'); }
+    else log(`Order placed to ${ADDR[S.selected].label} with no typing`,'g');
+    if(fix()) { S.server.lastUsed=S.selected; S.cache.lastAddr=S.selected; log(`Saved "${ADDR[S.selected].label}" as last used on the account`,'g'); }
+    S.counts.orders++; S.screen='done'; render();
+  });
+  on('again',()=>{S.screen='home';render()});
+}
+
+function needSignedIn(){ if(!S.signedIn){ log('Already logged out. Log in again first.','y'); render(); return false;} return true; }
+
+$('mBug').onclick=()=>{S.mode='bug';S.screen='home';log('Switched to BEFORE (current app)','y');render()};
+$('mFix').onclick=()=>{S.mode='fix';S.screen='home';log('Switched to AFTER (with the fix)','y');render()};
+$('sToken').onclick=()=>{ if(!needSignedIn())return;
+  S.cache.accessToken=false; log('Access token expired');
+  if(fix()){ S.cache.accessToken=true; log('→ Silent refresh with refresh token ✓ user notices nothing','g'); toast('✓ Session renewed in the background. Still signed in.'); }
+  else { log('→ No silent refresh. Forced logout ✗','r'); S.signedIn=false; S.counts.logout++; }
+  render(); };
+$('sNet').onclick=()=>{ if(!needSignedIn())return;
+  log('Token refresh request failed: network timeout');
+  if(fix()){ log('→ Timeout is not "invalid session": keep user signed in, retrying ✓','g'); toast('📶 Weak network. Still signed in, retrying…'); setTimeout(()=>{log('→ Retry succeeded, session renewed ✓','g');toast('✓ Back online. Session renewed.');render()},1800); }
+  else { log('→ Treated as invalid session. Forced logout ✗','r'); S.signedIn=false; S.counts.logout++; }
+  render(); };
+$('sUpdate').onclick=()=>{
+  log('App updated: local cache wiped');
+  S.cache={accessToken:false,lastAddr:null}; S.screen='home';
+  if(fix()){ log('→ Refresh token found in secure storage → signed in again silently ✓','g');
+    S.cache.accessToken=true; S.signedIn=true;
+    log(`→ Addresses restored from account; last used = ${ADDR[S.server.lastUsed].label} ✓`,'g'); toast(`✓ App updated. Still signed in, ${ADDR[S.server.lastUsed].label} address restored.`); }
+  else { if(S.signedIn){S.counts.logout++;} S.signedIn=false; log('→ Token was in cache only. Logged out ✗','r'); log('→ Last address was in cache only. Forgotten ✗','r'); }
+  render(); };
+$('sGps').onclick=()=>{ S.atOffice=!S.atOffice;
+  log(S.atOffice?'GPS: user is 4 km from Home (at the office)':'GPS: user is back near Home');
+  if(!fix()&&S.atOffice) log('→ Current app ignores this; user must notice and change address','y');
+  render(); };
+$('reset').onclick=()=>{S=fresh();clearTimeout(tT);delete $('toast').dataset.live;log('Demo reset: starting in BEFORE mode');render()};
+render();
+</script>
+</body></html>
